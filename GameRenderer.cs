@@ -77,7 +77,7 @@ public unsafe class GameRenderer
             int textY = bannerY + (bannerHeight - scaledHeight) / 2;
 
             var destRect = new Rectangle<int>(textX, textY, scaledWidth, scaledHeight);
-            RenderTexture(_gameOverTextTextureId, new Rectangle<int>(0, 0, sourceTextWidth, sourceTextHeight), destRect);
+            RenderUITexture(_gameOverTextTextureId, new Rectangle<int>(0, 0, sourceTextWidth, sourceTextHeight), destRect);
         }
 
         // Retry Button Background
@@ -90,7 +90,7 @@ public unsafe class GameRenderer
         var restartRect = new Rectangle<int>(buttonX, buttonY, buttonWidth, buttonHeight);
         _sdl.RenderFillRect(_renderer, &restartRect);
 
-        // Retry Text
+        // Retry Button Text
         if (_restartTextTextureId != -1)
         {
             const int sourceTextWidth = 200;
@@ -104,7 +104,7 @@ public unsafe class GameRenderer
             int textY = buttonY + (buttonHeight - scaledHeight) / 2;
 
             var destRect = new Rectangle<int>(textX, textY, scaledWidth, scaledHeight);
-            RenderTexture(_restartTextTextureId, new Rectangle<int>(0, 0, sourceTextWidth, sourceTextHeight), destRect);
+            RenderUITexture(_restartTextTextureId, new Rectangle<int>(0, 0, sourceTextWidth, sourceTextHeight), destRect);
         }
 
         return restartRect;
@@ -159,6 +159,14 @@ public unsafe class GameRenderer
                 in center, flip);
         }
     }
+
+    public void RenderUITexture(int textureId, Rectangle<int> src, Rectangle<int> dst)
+{
+    if (_texturePointers.TryGetValue(textureId, out var imageTexture))
+    {
+        _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, in src, in dst, 0.0, null, RendererFlip.None);
+    }
+}
 
     public Vector2D<int> ToWorldCoordinates(int x, int y)
     {
