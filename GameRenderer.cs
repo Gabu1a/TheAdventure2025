@@ -144,7 +144,6 @@ public unsafe class GameRenderer
                 _texturePointers[_textureId] = (IntPtr)imageTexture;
             }
         }
-
         return _textureId++;
     }
 

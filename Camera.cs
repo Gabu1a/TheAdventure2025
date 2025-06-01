@@ -13,7 +13,6 @@ public class Camera
     private Random random = new Random();
     private Vector2D<int> shakeOffset = new Vector2D<int>(0, 0);
 
-
     public int X => _x;
     public int Y => _y;
 
@@ -64,7 +63,6 @@ public class Camera
         shakeTime = duration;
         shakeIntensity = intensity;
     }
-
 
     public Rectangle<int> ToScreenCoordinates(Rectangle<int> rect)
     {

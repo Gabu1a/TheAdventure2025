@@ -20,8 +20,6 @@ public class Engine
     private Level _currentLevel = new();
     private PlayerObject? _player;
     private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-    private DateTimeOffset? _gameOverAt = null;
-    private const double GameOverDelaySeconds = 0.5;
 
     private bool _isGameOver = false;
     private Rectangle<int> _restartButtonRect = new Rectangle<int>(300, 250, 200, 60);
