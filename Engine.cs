@@ -22,6 +22,8 @@ public class Engine
 
     private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
 
+    private bool _isGameOver = false;
+
     public Engine(GameRenderer renderer, Input input)
     {
         _renderer = renderer;
@@ -81,7 +83,9 @@ public class Engine
     {
         var currentTime = DateTimeOffset.Now;
         var msSinceLastFrame = (currentTime - _lastUpdate).TotalMilliseconds;
+        _renderer.UpdateCamera((float)msSinceLastFrame / 1000f);
         _lastUpdate = currentTime;
+        
 
         if (_player == null)
         {
@@ -147,9 +151,11 @@ public class Engine
             var tempGameObject = (TemporaryGameObject)gameObject!;
             var deltaX = Math.Abs(_player.Position.X - tempGameObject.Position.X);
             var deltaY = Math.Abs(_player.Position.Y - tempGameObject.Position.Y);
-            if (deltaX < 32 && deltaY < 32)
+            if (deltaX < 32 && deltaY < 32 && !_isGameOver)
             {
+                _renderer.CameraShake(0.3f, 10f);
                 _player.GameOver();
+                _isGameOver = true;
             }
         }
 
