@@ -22,6 +22,7 @@ public class Engine
     private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
     private DateTimeOffset? _gameOverAt = null;
     private const double GameOverDelaySeconds = 0.5;
+    private const double BombExplosionSeconds = 1.3;
 
     private bool _isGameOver = false;
     private Rectangle<int> _restartButtonRect = new Rectangle<int>(300, 250, 200, 60);
@@ -38,6 +39,12 @@ public class Engine
         SetupWorld();
     }
 
+    private async Task PlayExplosionDelayed()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(BombExplosionSeconds));
+        SoundManager.PlayExplosion();
+    }
+
     public Engine(GameRenderer renderer, Input input)
     {
         _renderer = renderer;
@@ -49,6 +56,7 @@ public class Engine
             {
                 if (_restartButtonRect.Contains(new Vector2D<int>(coords.x, coords.y)))
                 {
+                    SoundManager.PlayClick();
                     RestartGame();
                 }
                 return;
@@ -60,6 +68,7 @@ public class Engine
 
     public void SetupWorld()
     {
+        SoundManager.LoadSounds();
         _player = new(SpriteSheet.Load(_renderer, "Player.json", "Assets"), 100, 100);
 
         var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
@@ -189,6 +198,7 @@ public class Engine
             var deltaY = Math.Abs(_player.Position.Y - tempGameObject.Position.Y);
             if (deltaX < 32 && deltaY < 32 && !_isGameOver)
             {
+                SoundManager.PlayDeath();
                 _renderer.CameraShake(0.3f, 10f);
                 _player.GameOver();
                 _isGameOver = true;
@@ -249,12 +259,17 @@ public class Engine
 
     public void AddBomb(int X, int Y, bool translateCoordinates = true)
     {
-        var worldCoords = translateCoordinates ? _renderer.ToWorldCoordinates(X, Y) : new Vector2D<int>(X, Y);
+        var worldCoords = translateCoordinates
+            ? _renderer.ToWorldCoordinates(X, Y)
+            : new Vector2D<int>(X, Y);
 
         SpriteSheet spriteSheet = SpriteSheet.Load(_renderer, "BombExploding.json", "Assets");
         spriteSheet.ActivateAnimation("Explode");
-
+        
         TemporaryGameObject bomb = new(spriteSheet, 2.1, (worldCoords.X, worldCoords.Y));
         _gameObjects.Add(bomb.Id, bomb);
+        
+        if(!_isGameOver)
+            _ = PlayExplosionDelayed();
     }
 }
