@@ -17,6 +17,9 @@ public unsafe class GameRenderer
     private Dictionary<int, IntPtr> _texturePointers = new();
     private Dictionary<int, TextureData> _textureData = new();
     private int _textureId;
+    private int _gameOverTextTextureId = -1;
+    private int _restartTextTextureId = -1;
+
 
     public GameRenderer(Sdl sdl, GameWindow window)
     {
@@ -28,6 +31,8 @@ public unsafe class GameRenderer
         _window = window;
         var windowSize = window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
+        _gameOverTextTextureId = LoadTexture("Assets/GameOverText.png", out var _);
+        _restartTextTextureId = LoadTexture("Assets/RetryText.png", out var _);
     }
 
     public void SetWorldBounds(Rectangle<int> bounds)
@@ -38,6 +43,71 @@ public unsafe class GameRenderer
     public void CameraLookAt(int x, int y)
     {
         _camera.LookAt(x, y);
+    }
+
+    public Rectangle<int> RenderGameOverScreen()
+    {
+        SetDrawColor(20, 20, 20, 255);
+        ClearScreen();
+
+        var windowWidth = _window.Size.Width;
+        var windowHeight = _window.Size.Height;
+
+        // Game Over Background 
+        int bannerWidth = 630;
+        int bannerHeight = 100;
+        int bannerX = (windowWidth - bannerWidth) / 2;
+        int bannerY = (windowHeight - bannerHeight) / 2 - 100;
+
+        SetDrawColor(255, 0, 0, 255);
+        var gameOverRect = new Rectangle<int>(bannerX, bannerY, bannerWidth, bannerHeight);
+        _sdl.RenderFillRect(_renderer, &gameOverRect);
+
+        // Game Over Text
+        if (_gameOverTextTextureId != -1)
+        {
+            const int sourceTextWidth = 710;
+            const int sourceTextHeight = 104;
+
+            float scale = Math.Min(bannerWidth / (float)sourceTextWidth, bannerHeight / (float)sourceTextHeight);
+            int scaledWidth = (int)(sourceTextWidth * scale);
+            int scaledHeight = (int)(sourceTextHeight * scale);
+
+            int textX = bannerX + (bannerWidth - scaledWidth) / 2;
+            int textY = bannerY + (bannerHeight - scaledHeight) / 2;
+
+            var destRect = new Rectangle<int>(textX, textY, scaledWidth, scaledHeight);
+            RenderTexture(_gameOverTextTextureId, new Rectangle<int>(0, 0, sourceTextWidth, sourceTextHeight), destRect);
+        }
+
+        // Retry Button Background
+        int buttonWidth = 200;
+        int buttonHeight = 60;
+        int buttonX = (windowWidth - buttonWidth) / 2;
+        int buttonY = (windowHeight - buttonHeight) / 2 + 20;
+
+        SetDrawColor(100, 100, 100, 255);
+        var restartRect = new Rectangle<int>(buttonX, buttonY, buttonWidth, buttonHeight);
+        _sdl.RenderFillRect(_renderer, &restartRect);
+
+        // Retry Text
+        if (_restartTextTextureId != -1)
+        {
+            const int sourceTextWidth = 200;
+            const int sourceTextHeight = 200;
+
+            float scale = Math.Min(buttonWidth / (float)sourceTextWidth, buttonHeight / (float)sourceTextHeight);
+            int scaledWidth = (int)(sourceTextWidth * scale);
+            int scaledHeight = (int)(sourceTextHeight * scale);
+
+            int textX = buttonX + (buttonWidth - scaledWidth) / 2;
+            int textY = buttonY + (buttonHeight - scaledHeight) / 2;
+
+            var destRect = new Rectangle<int>(textX, textY, scaledWidth, scaledHeight);
+            RenderTexture(_restartTextTextureId, new Rectangle<int>(0, 0, sourceTextWidth, sourceTextHeight), destRect);
+        }
+
+        return restartRect;
     }
 
     public int LoadTexture(string fileName, out TextureData textureInfo)
@@ -110,7 +180,7 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
-    
+
     public void CameraShake(float duration, float intensity)
     {
         _camera.TriggerShake(duration, intensity);
@@ -120,5 +190,4 @@ public unsafe class GameRenderer
     {
         _camera.Update(deltaTime);
     }
-
 }

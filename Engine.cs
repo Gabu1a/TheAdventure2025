@@ -19,17 +19,43 @@ public class Engine
 
     private Level _currentLevel = new();
     private PlayerObject? _player;
-
     private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
+    private DateTimeOffset? _gameOverAt = null;
+    private const double GameOverDelaySeconds = 0.5;
 
     private bool _isGameOver = false;
+    private Rectangle<int> _restartButtonRect = new Rectangle<int>(300, 250, 200, 60);
+
+    private void RestartGame()
+    {
+        _isGameOver = false;
+        _gameOverAt = null;
+
+        _gameObjects.Clear();
+        _tileIdMap.Clear();
+        _loadedTileSets.Clear();
+
+        SetupWorld();
+    }
 
     public Engine(GameRenderer renderer, Input input)
     {
         _renderer = renderer;
         _input = input;
 
-        _input.OnMouseClick += (_, coords) => AddBomb(coords.x, coords.y);
+        _input.OnMouseClick += (_, coords) =>
+        {
+            if (_isGameOver)
+            {
+                if (_restartButtonRect.Contains(new Vector2D<int>(coords.x, coords.y)))
+                {
+                    RestartGame();
+                }
+                return;
+            }
+
+            AddBomb(coords.x, coords.y);
+        };
     }
 
     public void SetupWorld()
@@ -86,7 +112,6 @@ public class Engine
         _renderer.UpdateCamera((float)msSinceLastFrame / 1000f);
         _lastUpdate = currentTime;
         
-
         if (_player == null)
         {
             return;
@@ -117,6 +142,17 @@ public class Engine
     {
         _renderer.SetDrawColor(0, 0, 0, 255);
         _renderer.ClearScreen();
+
+        if (_isGameOver)
+        {
+            var timeSinceGameOver = (DateTimeOffset.Now - _gameOverAt)?.TotalSeconds ?? 0;
+            if (timeSinceGameOver >= GameOverDelaySeconds)
+            {
+                _restartButtonRect = _renderer.RenderGameOverScreen();
+                _renderer.PresentFrame();
+                return;
+            }
+        }
 
         var playerPosition = _player!.Position;
         _renderer.CameraLookAt(playerPosition.X, playerPosition.Y);
@@ -156,9 +192,9 @@ public class Engine
                 _renderer.CameraShake(0.3f, 10f);
                 _player.GameOver();
                 _isGameOver = true;
+                _gameOverAt = DateTimeOffset.Now;
             }
         }
-
         _player?.Render(_renderer);
     }
 
