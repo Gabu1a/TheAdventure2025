@@ -13,7 +13,6 @@ public class Camera
     private Random random = new Random();
     private Vector2D<int> shakeOffset = new Vector2D<int>(0, 0);
 
-
     public int X => _x;
     public int Y => _y;
 
@@ -65,13 +64,10 @@ public class Camera
         shakeIntensity = intensity;
     }
 
-
     public Rectangle<int> ToScreenCoordinates(Rectangle<int> rect)
     {
         return rect.GetTranslated(new Vector2D<int>(Width / 2 - X, Height / 2 - Y) + shakeOffset);
     }
-
-
 
     public Vector2D<int> ToWorldCoordinates(Vector2D<int> point)
     {

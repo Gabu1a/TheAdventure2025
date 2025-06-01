@@ -19,9 +19,7 @@ public class Engine
 
     private Level _currentLevel = new();
     private PlayerObject? _player;
-
     private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
-
     private bool _isGameOver = false;
 
     public Engine(GameRenderer renderer, Input input)
@@ -158,7 +156,6 @@ public class Engine
                 _isGameOver = true;
             }
         }
-
         _player?.Render(_renderer);
     }
 

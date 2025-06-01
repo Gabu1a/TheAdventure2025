@@ -74,7 +74,6 @@ public unsafe class GameRenderer
                 _texturePointers[_textureId] = (IntPtr)imageTexture;
             }
         }
-
         return _textureId++;
     }
 
@@ -120,5 +119,4 @@ public unsafe class GameRenderer
     {
         _camera.Update(deltaTime);
     }
-
 }
